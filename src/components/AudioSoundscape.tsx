@@ -623,6 +623,207 @@ export default function AudioSoundscape() {
     } as any;
   };
 
+  const startTricksterProcedural = (ctx: AudioContext, mainGain: GainNode) => {
+    // Warm, golden, sun-drenched chords representing the Solar/Heliosentris system
+    const chords = [
+      [98.00, 123.47, 146.83, 185.00, 220.00, 293.66],  // G Major 9 (Helios gold)
+      [110.00, 138.59, 164.81, 207.65, 246.94, 329.63], // A Major 9 (Shining Ray)
+      [130.81, 164.81, 196.00, 246.94, 293.66, 329.63], // C Major 9 (Luminous crown)
+      [146.83, 196.00, 220.00, 261.63, 293.66, 329.63]  // D 9sus4 (Copernican orbital center)
+    ];
+
+    let currentChordIndex = 0;
+    const activeOscillators: OscillatorNode[] = [];
+    const activeGains: GainNode[] = [];
+
+    const playChord = () => {
+      if (!audioCtxRef.current || audioCtxRef.current.state === 'closed' || !isPlaying) return;
+      const now = ctx.currentTime;
+      const notes = chords[currentChordIndex];
+
+      // Fade out previous pad chords
+      activeGains.forEach((g) => {
+        try {
+          g.gain.setValueAtTime(g.gain.value, now);
+          g.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
+        } catch (e) {}
+      });
+
+      const oldOscs = [...activeOscillators];
+      setTimeout(() => {
+        oldOscs.forEach((osc) => {
+          try {
+            osc.stop();
+            osc.disconnect();
+          } catch (e) {}
+        });
+      }, 2200);
+
+      activeOscillators.length = 0;
+      activeGains.length = 0;
+
+      // Sveltering, warm, radiant sun chords
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(freq, now);
+
+        // Warm chorus feel with subtle microtonal detuning
+        osc.detune.setValueAtTime((Math.random() - 0.5) * 10, now);
+
+        const noteGain = ctx.createGain();
+        noteGain.gain.setValueAtTime(0, now);
+
+        const targetedVol = (idx === 0 ? 0.05 : 0.03) * volumeRef.current;
+        noteGain.gain.linearRampToValueAtTime(targetedVol, now + 3.0); // very slow majestic dawn swell
+        noteGain.gain.setValueAtTime(targetedVol, now + 5.0);
+        noteGain.gain.exponentialRampToValueAtTime(targetedVol * 0.5, now + 8.5);
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(550 + Math.sin(now * 0.8) * 90, now);
+        filter.Q.setValueAtTime(1.0, now);
+
+        osc.connect(filter);
+        filter.connect(noteGain);
+        noteGain.connect(mainGain);
+
+        osc.start(now);
+        activeOscillators.push(osc);
+        activeGains.push(noteGain);
+      });
+
+      currentChordIndex = (currentChordIndex + 1) % chords.length;
+    };
+
+    // Shared white noise buffer for crisp hi-hat tickles
+    let noiseBuffer: AudioBuffer | null = null;
+    try {
+      const bufferSize = ctx.sampleRate * 0.2;
+      noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+    } catch (e) {
+      console.warn("White noise buffer creation failed", e);
+    }
+
+    let step = 0;
+    const playSequencerStep = () => {
+      if (!audioCtxRef.current || audioCtxRef.current.state === 'closed' || !isPlaying) return;
+      const now = ctx.currentTime;
+
+      const percGain = ctx.createGain();
+      percGain.connect(mainGain);
+
+      // 1. Warm kick thud on 0, 4, 8, 12 representing the ticking clockwork of the cosmos
+      const isKickStep = step === 0 || step === 4 || step === 8 || step === 12;
+      if (isKickStep) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(percGain);
+
+        osc.frequency.setValueAtTime(110, now);
+        osc.frequency.exponentialRampToValueAtTime(36, now + 0.15);
+
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.12 * volumeRef.current, now + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+        osc.start(now);
+        osc.stop(now + 0.20);
+      }
+
+      // 2. Playful, radiant trickster synth notes bouncing under the solar warmth
+      // Bounding steps for active dialogue: 2, 5, 7, 10, 13 (syncopated)
+      const isMelodyStep = step === 2 || step === 5 || step === 7 || step === 10 || step === 13;
+      if (isMelodyStep) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+
+        osc.type = 'triangle';
+
+        // Select notes from active chord scaled higher for a celestial bell melody
+        const activeChord = chords[currentChordIndex];
+        const baseNote = activeChord[(step + currentChordIndex) % activeChord.length];
+        const bellFreq = baseNote * 2; // Arpeggiating an octave up for bright stars
+
+        osc.frequency.setValueAtTime(bellFreq, now);
+
+        // Lowpass filter envelope to make them sound like plucked sunbeams
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(800, now);
+        filter.frequency.exponentialRampToValueAtTime(150, now + 0.15);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(percGain);
+
+        const noteVol = 0.05 * volumeRef.current;
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(noteVol, now + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+        osc.start(now);
+        osc.stop(now + 0.25);
+      }
+
+      // 3. High-Pass Crisp Tickles (Hi-Hats) on offbeats (2, 6, 10, 14)
+      const isHat = step === 2 || step === 6 || step === 10 || step === 14;
+      if (isHat && noiseBuffer) {
+        const hNode = ctx.createBufferSource();
+        hNode.buffer = noiseBuffer;
+
+        const hFilter = ctx.createBiquadFilter();
+        hFilter.type = 'highpass';
+        hFilter.frequency.setValueAtTime(8500, now);
+
+        const hGain = ctx.createGain();
+        hGain.gain.setValueAtTime(0.012 * volumeRef.current, now);
+        hGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+        hNode.connect(hFilter);
+        hFilter.connect(hGain);
+        hGain.connect(percGain);
+        hNode.start(now);
+      }
+
+      step = (step + 1) % 16;
+    };
+
+    playChord();
+
+    let masterTickCounter = 0;
+    const masterScheduler = () => {
+      playSequencerStep();
+
+      // Trigger new chord sweep every 32 ticks (approx 7.2s)
+      if (masterTickCounter % 32 === 0 && masterTickCounter > 0) {
+        playChord();
+      }
+
+      masterTickCounter++;
+    };
+
+    const interval = setInterval(masterScheduler, 220); // 136 BPM
+    sequencerIntervalRef.current = interval;
+
+    // Wire cleanup refs to avoid leaks on track switches
+    osc1Ref.current = {
+      stop: () => {
+        activeOscillators.forEach(o => { try{ o.stop(); }catch(e){} });
+        clearInterval(interval);
+      },
+      disconnect: () => {
+        activeOscillators.forEach(o => { try{ o.disconnect(); }catch(e){} });
+        activeGains.forEach(g => { try{ g.disconnect(); }catch(e){} });
+      }
+    } as any;
+  };
+
   const startTrack = (trackId: string, ctx: AudioContext, mainGain: GainNode) => {
     stopTrackAssets();
     
@@ -636,7 +837,11 @@ export default function AudioSoundscape() {
       source.start();
     } else if (trackId === 'bgm_local' || trackId === 'moonlighting' || trackId === 'sakanaction_kaiju') {
       let srcUrl = '/bgm-utama.mp3';
-      if (trackId === 'moonlighting') {
+      if (trackId === 'bgm_local') {
+        srcUrl = '/bgm-utama.mp3';
+        // Start procedural solar/trickster harmony in addition to MP3 streaming so that there's beautiful audio even if the file is missing!
+        startTricksterProcedural(ctx, mainGain);
+      } else if (trackId === 'moonlighting') {
         srcUrl = '/Moonlighting.mp3';
         // Start procedural harmony in addition to MP3 streaming so that there's beautiful audio even if the file is missing!
         startCelestialHarmony(ctx, mainGain);
