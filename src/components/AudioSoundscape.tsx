@@ -639,7 +639,7 @@ export default function AudioSoundscape() {
       if (trackId === 'moonlighting') {
         srcUrl = '/Moonlighting.mp3';
       } else if (trackId === 'sakanaction_kaiju') {
-        srcUrl = '/カナクション  怪獣　-Music Video-.mp3';
+        srcUrl = '/Kaiju.mp3';
       }
       
       if (!audioElementRef.current) {
