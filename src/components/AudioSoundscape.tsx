@@ -38,7 +38,7 @@ export default function AudioSoundscape() {
   const [showTooltip, setShowTooltip] = useState<boolean>(false);
   const [showPlaylist, setShowPlaylist] = useState<boolean>(false);
   const [hasDefaultBgm, setHasDefaultBgm] = useState<boolean>(true);
-  const [activeTrack, setActiveTrack] = useState<string>('bgm_local');
+  const [activeTrack, setActiveTrack] = useState<string>('moonlighting');
   const [customTrack, setCustomTrack] = useState<Track | null>(null);
   
   const activeTrackRef = useRef<string>(activeTrack);
@@ -61,7 +61,6 @@ export default function AudioSoundscape() {
       .then((res) => {
         if (res.ok) {
           setHasDefaultBgm(true);
-          setActiveTrack('bgm_local');
         }
       })
       .catch((err) => console.log('No default /bgm-utama.mp3 loaded on host root yet. Fully ready for custom files or URL setup!'));
@@ -975,15 +974,15 @@ export default function AudioSoundscape() {
   }, []);
 
   const playlistItems = [
+    ...FULL_PLAYLIST,
+    ...(customTrack ? [customTrack] : []),
     ...(hasDefaultBgm ? [{
       id: 'bgm_local',
       title: 'Trickster',
       creator: 'File Otomatis Server/Public',
       description: 'Lagu latar utama dideteksi langsung dari folder public/bgm-utama.mp3 Anda.',
       color: 'from-amber-600/30 to-slate-900/40'
-    }] : []),
-    ...(customTrack ? [customTrack] : []),
-    ...FULL_PLAYLIST
+    }] : [])
   ];
 
   const currentTrackObj = playlistItems.find(t => t.id === activeTrack) || playlistItems[0];
