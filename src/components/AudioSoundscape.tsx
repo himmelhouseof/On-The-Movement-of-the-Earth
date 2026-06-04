@@ -963,66 +963,7 @@ export default function AudioSoundscape() {
   };
 
   useEffect(() => {
-    const tryAutoPlay = () => {
-      if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
-        if (audioCtxRef.current.state === 'suspended') {
-          audioCtxRef.current.resume().then(() => {
-            setIsPlaying(true);
-            if (mainGainRef.current) {
-              startTrack(activeTrackRef.current, audioCtxRef.current!, mainGainRef.current);
-            }
-          }).catch(err => console.log('Resume blocked:', err));
-        }
-        return;
-      }
-
-      try {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        const ctx = new AudioCtx();
-        audioCtxRef.current = ctx;
-
-        const mainGain = ctx.createGain();
-        mainGain.gain.setValueAtTime(volumeRef.current, ctx.currentTime);
-        mainGain.connect(ctx.destination);
-        mainGainRef.current = mainGain;
-
-        setIsPlaying(true);
-        startTrack(activeTrackRef.current, ctx, mainGain);
-      } catch (e) {
-        console.log('Autoplay blocked by browser. Awaiting user interaction gesture to start.');
-      }
-    };
-
-    // 1. Attempt running instantly on mount
-    tryAutoPlay();
-
-    // 2. Fallback to start instantly as soon as user touches, clicks, or scrolls anywhere
-    const handleFirstUserGesture = (e: Event) => {
-      const container = document.getElementById('soundscape-container');
-      if (container && container.contains(e.target as Node)) {
-        return;
-      }
-
-      tryAutoPlay();
-      document.removeEventListener('click', handleFirstUserGesture);
-      document.removeEventListener('touchstart', handleFirstUserGesture);
-      document.removeEventListener('mousedown', handleFirstUserGesture);
-      document.removeEventListener('pointerdown', handleFirstUserGesture);
-      document.removeEventListener('keydown', handleFirstUserGesture);
-    };
-
-    document.addEventListener('click', handleFirstUserGesture);
-    document.addEventListener('touchstart', handleFirstUserGesture);
-    document.addEventListener('mousedown', handleFirstUserGesture);
-    document.addEventListener('pointerdown', handleFirstUserGesture);
-    document.addEventListener('keydown', handleFirstUserGesture);
-
     return () => {
-      document.removeEventListener('click', handleFirstUserGesture);
-      document.removeEventListener('touchstart', handleFirstUserGesture);
-      document.removeEventListener('mousedown', handleFirstUserGesture);
-      document.removeEventListener('pointerdown', handleFirstUserGesture);
-      document.removeEventListener('keydown', handleFirstUserGesture);
       stopTrackAssets();
       if (audioCtxRef.current) {
         if (audioCtxRef.current.state !== 'closed') {
