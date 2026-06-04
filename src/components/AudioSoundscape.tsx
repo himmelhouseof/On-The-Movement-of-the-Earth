@@ -37,8 +37,8 @@ export default function AudioSoundscape() {
   const [volume, setVolume] = useState<number>(0.3);
   const [showTooltip, setShowTooltip] = useState<boolean>(false);
   const [showPlaylist, setShowPlaylist] = useState<boolean>(false);
-  const [hasDefaultBgm, setHasDefaultBgm] = useState<boolean>(false);
-  const [activeTrack, setActiveTrack] = useState<string>('moonlighting');
+  const [hasDefaultBgm, setHasDefaultBgm] = useState<boolean>(true);
+  const [activeTrack, setActiveTrack] = useState<string>('bgm_local');
   const [customTrack, setCustomTrack] = useState<Track | null>(null);
   
   const activeTrackRef = useRef<string>(activeTrack);
@@ -638,8 +638,12 @@ export default function AudioSoundscape() {
       let srcUrl = '/bgm-utama.mp3';
       if (trackId === 'moonlighting') {
         srcUrl = '/Moonlighting.mp3';
+        // Start procedural harmony in addition to MP3 streaming so that there's beautiful audio even if the file is missing!
+        startCelestialHarmony(ctx, mainGain);
       } else if (trackId === 'sakanaction_kaiju') {
         srcUrl = '/Kaiju.mp3';
+        // Start procedural cosmic rebellion in addition to MP3 streaming so that there's beautiful audio even if the file is missing!
+        startCosmicRebellion(ctx, mainGain);
       }
       
       if (!audioElementRef.current) {
@@ -661,7 +665,7 @@ export default function AudioSoundscape() {
       
       audioElementRef.current.src = srcUrl;
       audioElementRef.current.play().catch(err => {
-        console.log("HTML5 audio playback failed:", err);
+        console.log("HTML5 audio playback failed, relying on procedural fallback: ", err);
       });
     }
   };
