@@ -27,7 +27,7 @@ const FULL_PLAYLIST: Track[] = [
     id: 'sakanaction_kaiju',
     title: 'Sakanaction - Kaiju',
     creator: 'Hentakan Elektronik & Rock Jepang',
-    description: 'Lagu latar Sakanaction / Kaiju dideteksi langsung dari folder public/カナクション  怪獣　-Music Video-.mp3 Anda.',
+    description: 'Lagu latar Sakanaction / Kaiju dideteksi langsung dari folder public/Kaiju.mp3 Anda.',
     color: 'from-purple-650/30 to-slate-900/40'
   }
 ];
