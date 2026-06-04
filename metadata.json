@@ -1,0 +1,6 @@
+{
+  "name": "On The Movement Of The Earth",
+  "description": "Landing page interaktif untuk varian parfum bertema heliosentrisme, menghadirkan atmosfer akademis dingin abad ke-16, perdebatan teologi-sains, dan wewangian yang merevolusi semesta.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
